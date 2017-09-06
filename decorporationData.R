@@ -18,8 +18,24 @@ import_data$Treatment <- mapvalues(import_data$Treatment, from = levels(import_d
                               to = c("Control", "HOPO, 24 h pre", "HOPO, 1 h pre", "HOPO, 1 h post", 
                                      "HOPO, 24 h post", "HOPO, 48 h post","DTPA, 1 h pre", "DTPA, 1 hr post"))
 
-
+# make new data for daily urine and feces
 idcols = c(1:4,17)
+import_excreta <- import_data[idcols]
+urine <- cbind(import_excreta, read.xlsx("../FromRebecca/data/Rimport.xlsx", 
+                                                  header = TRUE, sheetIndex = 2)[,-1], 
+                        Excretion = "Urine")
+murine <- melt(urine, id = c(colnames(urine[1:5]), "Excretion"))
+
+feces <- cbind(import_excreta, read.xlsx("../FromRebecca/data/Rimport.xlsx", 
+                                         header = TRUE, sheetIndex = 3)[,-1], 
+               Excretion = "Feces")
+mfeces <- melt(feces, id = c(colnames(urine[1:5]), "Excretion"))
+
+excreta <- rbind(mfeces, murine)
+colnames(excreta) <- c(colnames(excreta[1:6]), "Day", "Value")
+excreta$Value <- excreta$Value * 100
+
+
 mdata <- melt(import_data, id = colnames(import_data)[idcols])
 mdata$value <- mdata$value * 100
 
@@ -105,10 +121,16 @@ ggplot(mdatasc[ which(mdatasc$variable == "Feces" | mdatasc$variable == "Urine")
   scale_alpha_discrete(range = c(0.4, 0.9)) + 
   scale_fill_brewer(palette="Dark2")
 
+ggplot(excreta, aes(x = Day, y = Value, by = Treatment)) + 
+  geom_boxplot(aes(fill = Treatment)) + 
+  facet_wrap(~Excretion)
 
-ggplot(mretensc, aes(x = Treatment, y = Value, by = Location)) + 
-  geom_col(aes(fill = Ligand, alpha = Location), width = 0.7) + 
-  theme(axis.text.x = element_text(angle = 60, hjust = 1)) + 
-  ylab("% Activity") + 
-  theme(legend.title = element_blank()) + 
-  scale_alpha_discrete(range = c(0.2, 0.9))
+ggplot(excreta, aes(x = Day, y = Value, by = Excretion)) + 
+  geom_boxplot(aes(fill = Excretion)) + 
+  facet_wrap(~Treatment)
+
+ggplot(excreta, aes(x = Day, y = Value, by = Treatment)) + 
+  geom_col(aes(fill = Treatment), position = "dodge", width = 0.8) + 
+  facet_wrap(~Excretion) + 
+  scale_fill_brewer(palette="Dark2")
+
