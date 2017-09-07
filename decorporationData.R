@@ -231,3 +231,27 @@ ggplot(ddply(totcumexcreta, .(Day, Treatment), summarize, Ave=mean(Value),
   theme(legend.title = element_blank()) + 
   scale_color_brewer(palette="Dark2") + 
   geom_hline(yintercept = 100, linetype = 2)
+
+
+ddply(totcumexcreta, .(Day, Treatment), summarize, Ave=mean(Value), 
+      Error = sd(Value)/sqrt(length(Value)))
+
+
+
+reltotcumexcreta <- ddply(totcumexcreta, .(Day, Treatment), summarize, Ave=mean(Value), 
+      Error = sd(Value)/sqrt(length(Value)))
+
+reltotcumexcreta <- ddply(reltotcumexcreta, .(Day), transform, Ave = Ave - Ave[Treatment=="Control"])                              
+reltotcumexcreta <- reltotcumexcreta[-which(reltotcumexcreta$Treatment == "Control"), ]                              
+                              
+                              
+ggplot(reltotcumexcreta, aes(x = Day, y = Ave, group = Treatment)) + 
+  geom_line(aes(color = Treatment), size = 1) +
+  scale_x_discrete(name = "Study Day", labels = c("1", "2", "3", "4")) +
+  scale_y_continuous(name = "% Activity Excreted Relative to Control", limits = c(-1,65)) +
+  #ylab("% Activity Excreted") +
+  geom_point(aes(color = Treatment)) + 
+  #geom_errorbar(aes(color = Treatment, ymin = Ave - Error, ymax = Ave + Error), size = 1, width = 0.05) +
+  theme(legend.title = element_blank()) + 
+  scale_color_brewer(palette="Dark2")
+#  geom_hline(yintercept = 100, linetype = 2)
