@@ -56,6 +56,30 @@ dint <- dcast(mint, Group+Treatment+Ligand+Time~variable, mean)
 dint[,5:14] <- dint[,5:14]/rowSums(dint[,5:14])
 mdint <- melt(dint, id = c("Group", "Ligand", "Time", "Treatment"))
 
+
+
+totexcreta <- excreta[ which(cumexcreta$Excretion == "Urine"), 1:7]
+totexcreta$Excretion <- "Total"
+totexcreta <- cbind(totexcreta, Value = excreta$Value[ which(excreta$Excretion == "Urine") ] + 
+  excreta$Value[ which(excreta$Excretion == "Feces") ])
+
+
+
+
+cumexcreta <- excreta
+cumexcreta$Value[ which(cumexcreta$Day == "Day.2")] <- 
+  cumexcreta$Value[ which(cumexcreta$Day == "Day.1")] + cumexcreta$Value[ which(cumexcreta$Day == "Day.2")]
+cumexcreta$Value[ which(cumexcreta$Day == "Day.3")] <- 
+  cumexcreta$Value[ which(cumexcreta$Day == "Day.2")] + cumexcreta$Value[ which(cumexcreta$Day == "Day.3")]
+cumexcreta$Value[ which(cumexcreta$Day == "Day.4")] <- 
+  cumexcreta$Value[ which(cumexcreta$Day == "Day.3")] + cumexcreta$Value[ which(cumexcreta$Day == "Day.4")]
+
+totcumexcreta <- cumexcreta[ which(cumexcreta$Excretion == "Urine"), 1:7]
+totcumexcreta$Excretion <- "Total"
+totcumexcreta <- cbind(totcumexcreta, Value = cumexcreta$Value[ which(cumexcreta$Excretion == "Urine") ] + 
+                         cumexcreta$Value[ which(cumexcreta$Excretion == "Feces") ])
+
+
 #---------- END OF DATA MANIPULATION !-!-! PLOTTING STARTS ----------------
 w = 0.65
 fwid = 9
@@ -68,6 +92,37 @@ theme_update(plot.title = element_text(hjust = 0.5),
 mdata[which(mdata$variable != "Urine" & mdata$variable != "Feces"), ]
 
 
+ggplot(mdata[ which(mdata$variable != "Urine" & mdata$variable != "Feces"), ], 
+       aes(x = variable, y = value, fill = variable)) + 
+  geom_col(width = 0.8, position = "dodge") +
+  theme(axis.text.x = element_text(angle = 50, hjust = 1)) + 
+  theme(legend.title = element_blank()) + 
+  facet_wrap(~Treatment) + 
+  xlab("Organ") + 
+  ylab("% Activity") +
+  scale_fill_brewer(palette="Spectral")
+
+ggplot(mdata[ which(mdata$variable != "Urine" & mdata$variable != "Feces" & mdata$Ligand != "DTPA"), ], 
+       aes(x = variable, y = value, fill = variable)) + 
+  geom_col(width = 0.8, position = "dodge") +
+  theme(axis.text.x = element_text(angle = 50, hjust = 1)) + 
+  theme(legend.title = element_blank()) + 
+  facet_wrap(~Treatment) + 
+  xlab("Organ") + 
+  ylab("% Activity") +
+  scale_fill_brewer(palette="Spectral")
+
+ggplot(mdata[ which(mdata$variable != "Urine" & mdata$variable != "Feces" & mdata$Ligand != "HOPO"), ], 
+       aes(x = variable, y = value, fill = variable)) + 
+  geom_col(width = 0.8, position = "dodge") +
+  theme(axis.text.x = element_text(angle = 50, hjust = 1)) + 
+  theme(legend.title = element_blank()) + 
+  facet_wrap(~Treatment) + 
+  xlab("Organ") + 
+  ylab("% Activity") +
+  scale_fill_brewer(palette="Spectral")
+
+
 ggplot(mdint, aes(x = "", y = value, fill = variable)) + 
   geom_col(width = 1) +
   coord_polar("y", start=0) + 
@@ -78,6 +133,7 @@ ggplot(mdint, aes(x = "", y = value, fill = variable)) +
         axis.ticks.x = element_blank(),
         axis.text.y = element_blank(),
         axis.text.x = element_blank()) + 
+  theme(legend.title = element_blank()) + 
   scale_fill_brewer(palette="Spectral")
 
 
@@ -123,14 +179,47 @@ ggplot(mdatasc[ which(mdatasc$variable == "Feces" | mdatasc$variable == "Urine")
 
 ggplot(excreta, aes(x = Day, y = Value, by = Treatment)) + 
   geom_boxplot(aes(fill = Treatment)) + 
-  facet_wrap(~Excretion)
+  theme(legend.title = element_blank()) + 
+  facet_wrap(~Excretion) + 
+  scale_fill_brewer(palette="Spectral")
 
 ggplot(excreta, aes(x = Day, y = Value, by = Excretion)) + 
   geom_boxplot(aes(fill = Excretion)) + 
+  theme(legend.title = element_blank()) + 
   facet_wrap(~Treatment)
 
 ggplot(excreta, aes(x = Day, y = Value, by = Treatment)) + 
   geom_col(aes(fill = Treatment), position = "dodge", width = 0.8) + 
+  theme(legend.title = element_blank()) + 
   facet_wrap(~Excretion) + 
   scale_fill_brewer(palette="Dark2")
 
+ggplot(ddply(excreta[ which(excreta$Excretion == "Urine"), ], .(Day, Treatment, Excretion), summarize, Value=mean(Value)), 
+             aes(x = Day, y = Value)) + 
+  geom_col(data = ddply(totexcreta, .(Day, Treatment), summarize, Value=mean(Value), 
+                        se = sd(Value)/sqrt(length(Value))),
+           aes(x = Day, y = Value, fill = Treatment, group = Treatment), 
+           position = "dodge", width = 0.8, alpha = 0.5) + 
+  geom_col(aes(fill = Treatment, group = Treatment), 
+           position = "dodge", width = 0.8, alpha = 1) + 
+  theme(legend.title = element_blank()) + 
+  scale_fill_brewer(palette="Dark2") + 
+  scale_y_continuous(name = "% Activity Excreted ", limits = c(0,100)) +
+  geom_col(data = ddply(excreta, .(Day, Treatment, Excretion), summarize, Value=mean(Value)), 
+           aes(y = Value / 100000, alpha = Excretion, group = Treatment), 
+                    position = "dodge", width = 0.8) + 
+  scale_alpha_discrete(range = c(0.5, 1))
+
+
+ggplot(ddply(totcumexcreta, .(Day, Treatment), summarize, Ave=mean(Value), 
+             Error = sd(Value)/sqrt(length(Value))),
+       aes(x = Day, y = Ave, group = Treatment)) + 
+  geom_line(aes(color = Treatment), size = 1) +
+  scale_x_discrete(name = "Study Day", labels = c("1", "2", "3", "4")) +
+  scale_y_continuous(name = "% Activity Excreted", limits = c(30,100)) +
+  #ylab("% Activity Excreted") +
+  geom_point(aes(color = Treatment)) + 
+  geom_errorbar(aes(color = Treatment, ymin = Ave - Error, ymax = Ave + Error), size = 1, width = 0.05) +
+  theme(legend.title = element_blank()) + 
+  scale_color_brewer(palette="Dark2") + 
+  geom_hline(yintercept = 100, linetype = 2)
