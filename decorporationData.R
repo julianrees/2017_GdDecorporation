@@ -58,7 +58,7 @@ mdint <- melt(dint, id = c("Group", "Ligand", "Time", "Treatment"))
 
 
 
-totexcreta <- excreta[ which(cumexcreta$Excretion == "Urine"), 1:7]
+totexcreta <- excreta[ which(excreta$Excretion == "Urine"), 1:7]
 totexcreta$Excretion <- "Total"
 totexcreta <- cbind(totexcreta, Value = excreta$Value[ which(excreta$Excretion == "Urine") ] + 
   excreta$Value[ which(excreta$Excretion == "Feces") ])
@@ -144,6 +144,7 @@ ggplot(mreten, aes(x = Treatment, y = Value, by = Location)) +
   ylab("% Activity") + 
   theme(legend.title = element_blank()) + 
   scale_alpha_discrete(range = c(0.4, 0.9)) + 
+  scale_y_continuous(limits = c(0,100)) +
   scale_fill_brewer(palette="Dark2")
 
 
@@ -153,6 +154,7 @@ ggplot(mreten[ which(mreten$Location == "Excreted"), ], aes(x = Treatment, y = V
   ylab("% Activity Excreted") + 
   theme(legend.title = element_blank()) + 
   scale_alpha_discrete(range = c(0.4, 0.9)) + 
+  scale_y_continuous(limits = c(0,100)) +
   scale_fill_brewer(palette="Dark2")
 
 ggplot(mdata[ which(mdata$variable == "Feces" | mdata$variable == "Urine"), ], aes(x = Treatment, y = value, by = variable)) + 
@@ -161,7 +163,8 @@ ggplot(mdata[ which(mdata$variable == "Feces" | mdata$variable == "Urine"), ], a
   ylab("% Activity Excreted") + 
   theme(legend.title = element_blank()) + 
   scale_alpha_discrete(range = c(0.4, 0.9)) + 
-  scale_fill_brewer(palette="Dark2")
+  scale_y_continuous(limits = c(0,100)) +
+  scale_fill_brewer(palette="Set2")
 
 
 mretensc <- mreten
@@ -175,23 +178,28 @@ ggplot(mdatasc[ which(mdatasc$variable == "Feces" | mdatasc$variable == "Urine")
   ylab("% Activity Excreted") + 
   theme(legend.title = element_blank()) + 
   scale_alpha_discrete(range = c(0.4, 0.9)) + 
-  scale_fill_brewer(palette="Dark2")
+  scale_y_continuous(limits = c(0,100)) +
+  scale_fill_brewer(palette="Set2")
 
 ggplot(excreta, aes(x = Day, y = Value, by = Treatment)) + 
   geom_boxplot(aes(fill = Treatment)) + 
   theme(legend.title = element_blank()) + 
   facet_wrap(~Excretion) + 
-  scale_fill_brewer(palette="Spectral")
+  scale_y_continuous(limits = c(0,100)) +
+  scale_fill_brewer(palette="Dark2")
 
 ggplot(excreta, aes(x = Day, y = Value, by = Excretion)) + 
   geom_boxplot(aes(fill = Excretion)) + 
   theme(legend.title = element_blank()) + 
-  facet_wrap(~Treatment)
+  facet_wrap(~Treatment) + 
+  scale_y_continuous(limits = c(0,100)) +
+  scale_fill_brewer(palette="Set2")
 
 ggplot(excreta, aes(x = Day, y = Value, by = Treatment)) + 
   geom_col(aes(fill = Treatment), position = "dodge", width = 0.8) + 
   theme(legend.title = element_blank()) + 
   facet_wrap(~Excretion) + 
+  scale_y_continuous(limits = c(0,100)) +
   scale_fill_brewer(palette="Dark2")
 
 ggplot(ddply(excreta[ which(excreta$Excretion == "Urine"), ], .(Day, Treatment, Excretion), summarize, Value=mean(Value)), 
@@ -216,7 +224,7 @@ ggplot(ddply(totcumexcreta, .(Day, Treatment), summarize, Ave=mean(Value),
        aes(x = Day, y = Ave, group = Treatment)) + 
   geom_line(aes(color = Treatment), size = 1) +
   scale_x_discrete(name = "Study Day", labels = c("1", "2", "3", "4")) +
-  scale_y_continuous(name = "% Activity Excreted", limits = c(30,100)) +
+  scale_y_continuous(name = "% Activity Excreted", limits = c(0,100)) +
   #ylab("% Activity Excreted") +
   geom_point(aes(color = Treatment)) + 
   geom_errorbar(aes(color = Treatment, ymin = Ave - Error, ymax = Ave + Error), size = 1, width = 0.05) +
