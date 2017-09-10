@@ -102,6 +102,63 @@ ggplot(mdata[ which(mdata$variable != "Urine" & mdata$variable != "Feces"), ],
   ylab("% Activity") +
   scale_fill_brewer(palette="Spectral")
 
+
+mdata[ which(mdata$variable == "Urine" & mdata$variable != "Feces"), ]
+
+ddply(mdata[ which(mdata$variable != "Urine" & mdata$variable != "Feces"), ], 
+      .(Treatment, variable), summarize, Ave = mean(value), 
+      Error = sd(value)/sqrt(length(value))
+)
+
+
+reltotcumexcreta <- ddply(totcumexcreta, .(Day, Treatment), summarize, Ave=mean(Value), 
+                          Error = sd(Value)/sqrt(length(Value)))
+
+ddply(mreten[which(mreten$Location == "Retained"), ], .(Treatment), summarize, Ave=mean(Value), 
+      Error = sd(Value)/sqrt(length(Value)))
+
+
+
+
+orgreten <- ddply(mdata[ which(mdata$variable != "Urine" & mdata$variable != "Feces"), ], 
+                  .(Treatment, variable), summarize, Ave = mean(value), 
+                  Error = sd(value)/sqrt(length(value)))
+orgreten$variable <- with(orgreten, factor(variable, levels = rev(levels(variable))))
+
+pos <- position_dodge(width = 0.9)
+
+ggplot(orgreten, aes(x = Treatment, weight = Ave, ymin = Ave-Error, ymax = Ave+Error, fill = variable, group = variable)) + 
+  geom_col(aes(y = Ave, fill = variable), color = 'black', position = pos) +
+  geom_errorbar(position = pos) + 
+  geom_col(data = ddply(mreten[which(mreten$Location == "Retained"), ], .(Treatment), summarize, Ave=mean(Value), 
+                        Error = sd(Value)/sqrt(length(Value))), 
+           aes(y = Ave, fill = NULL, group = NULL),
+           alpha = 0, color = 'black') + 
+  geom_errorbar(data = ddply(mreten[which(mreten$Location == "Retained"), ], .(Treatment), summarize, Ave=mean(Value), 
+                             Error = sd(Value)/sqrt(length(Value))), 
+                aes(fill = NULL, group = NULL, ymin = Ave - Error, ymax = Ave + Error), 
+                position = pos, width = 0.4) + 
+  scale_fill_grey(end = 1) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  scale_y_continuous(name = expression(''^153*Gd~'Content (% ID)'), limits = c(0,75)) +
+  theme(legend.title = element_blank()) + 
+  xlab(NULL)
+
+
+
+ggplot(mdata [ which(mdata$variable == "Brain"), ], aes(x = Treatment, y = value)) + 
+  geom_boxplot()
+
+mdata[ which(mdata$variable == "Brain"), ]
+
+fit <- aov(value ~ Treatment, data = mdata[ which(mdata$variable == "Brain"), ])
+coef(fit)
+summary(fit)
+TukeyHSD(fit)
+summary(glht(fit, linfct=mcp(Treatment="Dunnett")))
+
+
+
 ggplot(mdata[ which(mdata$variable != "Urine" & mdata$variable != "Feces" & mdata$Ligand != "DTPA"), ], 
        aes(x = variable, y = value, fill = variable)) + 
   geom_col(width = 0.8, position = "dodge") +
@@ -255,3 +312,33 @@ ggplot(reltotcumexcreta, aes(x = Day, y = Ave, group = Treatment)) +
   theme(legend.title = element_blank()) + 
   scale_color_brewer(palette="Dark2")
 #  geom_hline(yintercept = 100, linetype = 2)
+
+
+
+
+#---- ! ! STATISTICAL ANALYSIS SECTION ! ! ----
+
+library(multcomp)
+
+ggplot(reten, aes(x = Treatment, y = Body)) + 
+  geom_boxplot()
+
+reten.modl <- lm(Body ~ Group, data = reten)
+summary(reten.modl)
+anova(reten.modl)
+confint(reten.modl)
+
+
+fit <- aov(Excreta ~ Group, data = reten)
+coef(fit)
+summary(fit)
+TukeyHSD(fit)
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+
+plot(fit)
+
+org.modl <- aov(value ~ variable, data = mdata)
+summary(org.modl)
+anova(org.modl)
+TukeyHSD(org.modl)
+summary(glht(org.modl, linfct=mcp(variable="Dunnett")))
