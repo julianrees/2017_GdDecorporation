@@ -89,7 +89,10 @@ theme_update(plot.title = element_text(hjust = 0.5),
              panel.grid.major = element_blank(),
              panel.grid.minor = element_blank())
 
-mdata[which(mdata$variable != "Urine" & mdata$variable != "Feces"), ]
+grouppalatte = c('#41ad5b','#08306b','#2171b5','#4292B6','#6baed6','#9ecae1','#cb181d','#fb6a4a')
+
+
+#mdata[which(mdata$variable != "Urine" & mdata$variable != "Feces"), ]
 
 
 ggplot(mdata[ which(mdata$variable != "Urine" & mdata$variable != "Feces"), ], 
@@ -133,29 +136,124 @@ ggplot(orgreten, aes(x = Treatment, weight = Ave, ymin = Ave-Error, ymax = Ave+E
   geom_col(data = ddply(mreten[which(mreten$Location == "Retained"), ], .(Treatment), summarize, Ave=mean(Value), 
                         Error = sd(Value)/sqrt(length(Value))), 
            aes(y = Ave, fill = NULL, group = NULL),
+           alpha = 0.25, color = 'black') + 
+  geom_errorbar(data = ddply(mreten[which(mreten$Location == "Retained"), ], .(Treatment), summarize, Ave=mean(Value), 
+                             Error = sd(Value)/sqrt(length(Value))), 
+                aes(fill = NULL, group = NULL, ymin = Ave - Error, ymax = Ave + Error), 
+                position = pos, width = 0.4) + 
+  #scale_fill_grey(end = 1) +
+  scale_fill_brewer(palette = "Spectral") +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1)) + 
+  scale_y_continuous(name = expression(''^153*Gd~'Content (% ID)'), limits = c(0,60), expand = c(0, 0)) +
+  theme(legend.title = element_blank()) + 
+  xlab(NULL) + 
+  ggsave(filename = '../../../Manuscripts/2017_GdDecorporation/Overleaf/biodistribution.pdf', 
+         width = 5.5, height = 5.5, units = "in")
+
+
+ggplot(orgreten, aes(x = Treatment, weight = Ave, ymin = Ave-Error, ymax = Ave+Error, fill = variable, group = variable)) + 
+  geom_col(aes(y = Ave, fill = variable), color = 'black', position = pos) +
+  geom_errorbar(position = pos) + 
+  geom_col(data = ddply(mreten[which(mreten$Location == "Retained"), ], .(Treatment), summarize, Ave=mean(Value), 
+                        Error = sd(Value)/sqrt(length(Value))), 
+           aes(y = Ave, fill = NULL, group = NULL),
            alpha = 0, color = 'black') + 
   geom_errorbar(data = ddply(mreten[which(mreten$Location == "Retained"), ], .(Treatment), summarize, Ave=mean(Value), 
                              Error = sd(Value)/sqrt(length(Value))), 
                 aes(fill = NULL, group = NULL, ymin = Ave - Error, ymax = Ave + Error), 
                 position = pos, width = 0.4) + 
+  scale_fill_brewer(palette = "Spectral") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  scale_y_continuous(name = expression(''^153*Gd~'Content (% ID)'), limits = c(0,60)) +
+  theme(legend.title = element_blank()) + 
+  xlab(NULL) + 
+  ggsave(filename = '../../../Presentations/Conferences/2017_SLAC_UserMeeting/Poster/Figures/biodistribution.pdf', 
+         width = 5, height = 4, units = "in")
+
+
+
+
+selorgreten <- orgreten[ which(orgreten$Treatment == "HOPO, 24 h pre" | orgreten$Treatment =="HOPO, 1 h pre" | orgreten$Treatment == "DTPA, 1 h pre"), ]
+selmreten <- mreten[ which(mreten$Treatment == "HOPO, 24 h pre" | mreten$Treatment =="HOPO, 1 h pre" | mreten$Treatment == "DTPA, 1 h pre"), ]
+
+ggplot(selorgreten, aes(x = Treatment, weight = Ave, ymin = Ave-Error, ymax = Ave+Error, fill = variable, group = variable)) + 
+  geom_col(aes(y = Ave, fill = variable), color = 'black', position = pos) +
+  geom_errorbar(position = pos) + 
+  geom_col(data = ddply(selmreten[which(selmreten$Location == "Retained"), ], .(Treatment), summarize, Ave=mean(Value), 
+                        Error = sd(Value)/sqrt(length(Value))), 
+           aes(y = Ave, fill = NULL, group = NULL),
+           alpha = 0, color = 'black') + 
+  geom_errorbar(data = ddply(selmreten[which(selmreten$Location == "Retained"), ], .(Treatment), summarize, Ave=mean(Value), 
+                             Error = sd(Value)/sqrt(length(Value))), 
+                aes(fill = NULL, group = NULL, ymin = Ave - Error, ymax = Ave + Error), 
+                position = pos, width = 0.4) + 
   scale_fill_grey(end = 1) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  scale_y_continuous(name = expression(''^153*Gd~'Content (% ID)'), limits = c(0,75)) +
+  scale_y_continuous(name = expression(''^153*Gd~'Content (% ID)'), limits = c(0,10.5), breaks = c(0,2,4,6,8,10)) +
   theme(legend.title = element_blank()) + 
-  xlab(NULL)
+  xlab(NULL) #+ 
+  #ggsave(filename = '../../../Manuscripts/2017_GdDecorporation/Overleaf/biodistribution.pdf', 
+   #      width = 5, height = 4, units = "in")
+
+
+
+
 
 
 
 ggplot(mdata [ which(mdata$variable == "Brain"), ], aes(x = Treatment, y = value)) + 
-  geom_boxplot()
+  geom_boxplot(aes(fill = Treatment)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-mdata[ which(mdata$variable == "Brain"), ]
+ggplot(mdata [ which(mdata$variable == "Kidneys"), ], aes(x = Treatment, y = value)) + 
+  geom_boxplot(aes(fill = Treatment)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-fit <- aov(value ~ Treatment, data = mdata[ which(mdata$variable == "Brain"), ])
-coef(fit)
-summary(fit)
-TukeyHSD(fit)
-summary(glht(fit, linfct=mcp(Treatment="Dunnett")))
+ggplot(mdata [ which(mdata$variable == "Liver"), ], aes(x = Treatment, y = value)) + 
+  geom_boxplot(aes(fill = Treatment)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(mdata [ which(mdata$variable == "Liver" | mdata$variable == "Kidneys" | mdata$variable == "Brain"), ], 
+       aes(x = Treatment, y = value)) + 
+  geom_boxplot() + 
+  scale_fill_grey(end = 1) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  scale_y_continuous(name = expression(''^153*Gd~'Content (% ID)')) +
+  facet_grid(variable ~ ., scales = "free") + 
+  theme(legend.title = element_blank()) + 
+  xlab(NULL) + 
+  ggsave(filename = '../../../Manuscripts/2017_GdDecorporation/Overleaf/selectorgans.pdf', 
+         width = 5, height = 5, units = "in")
+  
+
+ggplot(mdata [ which(mdata$variable != "Urine" & mdata$variable != "Feces"), ], 
+       aes(x = Treatment, y = value)) + 
+  geom_boxplot(aes(fill = Treatment), width = 0.4) + 
+  #scale_fill_grey(end = 1) +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1)) + 
+  scale_y_continuous(name = expression(''^153*Gd~'Content (% ID)'), expand = c(0.02,0)) +
+  facet_grid(variable ~ ., scales = "free") + 
+  theme(legend.title = element_blank()) + 
+  xlab(NULL) + 
+  theme(panel.spacing = unit(0.2, "lines")) + 
+  scale_fill_manual(values = grouppalatte) +
+  ggsave(filename = '../../../Manuscripts/2017_GdDecorporation/Overleaf/allorgans.pdf', 
+         width = 6, height = 7, units = "in")
+
+
+ggplot(mdata [ which(mdata$variable != "Urine" & mdata$variable != "Feces"), ], 
+       aes(x = Treatment, y = value)) + 
+  geom_jitter(aes(color = Treatment), width = 0.2) + 
+  #scale_fill_grey(end = 1) +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1)) + 
+  scale_y_continuous(name = expression(''^153*Gd~'Content (% ID)'), expand = c(0.02,0)) +
+  facet_grid(variable ~ ., scales = "free") + 
+  theme(legend.title = element_blank()) + 
+  xlab(NULL) + 
+  theme(panel.spacing = unit(0.2, "lines")) + 
+  scale_color_manual(values = grouppalatte) +
+  ggsave(filename = '../../../Manuscripts/2017_GdDecorporation/Overleaf/allorgansjitter.pdf', 
+         width = 6, height = 7, units = "in")
 
 
 
@@ -275,6 +373,61 @@ ggplot(ddply(excreta[ which(excreta$Excretion == "Urine"), ], .(Day, Treatment, 
                     position = "dodge", width = 0.8) + 
   scale_alpha_discrete(range = c(0.5, 1))
 
+totexcreta$Excretion <- as.factor(totexcreta$Excretion)
+str(totexcreta)
+allexcreta <- rbind(totexcreta, excreta)
+str(allexcreta)
+
+
+
+ggplot(ddply(allexcreta, .(Day, Treatment, Excretion), summarize, Ave = mean(Value), 
+             Error = sd(Value)/sqrt(length(Value))), 
+             aes(x = Day, y = Ave, by = Treatment, group = Treatment)) + 
+  geom_col(aes(fill = Treatment), position = "dodge") + 
+  facet_grid(. ~ Excretion) + 
+  scale_x_discrete(name = "Study Day", labels = c("1", "2", "3", "4"), expand = c(0.01, 0.01)) +
+  scale_y_continuous(name = expression(''^153*Gd~'Content (% ID)'), limits = c(0,100), expand = c(0, 0)) +
+  geom_errorbar(aes(ymin = Ave - Error, ymax = Ave + Error), size = 0.4, width = 0.8, color = "black", position = pos) +
+  theme(legend.title = element_blank()) + 
+  scale_fill_manual(values = grouppalatte) + 
+  theme(legend.position = "bottom") + 
+  theme(panel.spacing = unit(0.3, "lines")) + 
+  ggsave(filename = '../../../Manuscripts/2017_GdDecorporation/Overleaf/totalexcretions.pdf', 
+         width = 5.5, height = 5, units = "in")
+
+
+ggplot(allexcreta, aes(x = Day, y = Value, by = Treatment)) + 
+  geom_boxplot(aes(fill = Treatment, color = Treatment)) + 
+  facet_grid(. ~ Excretion) + 
+  scale_x_discrete(name = "Study Day", labels = c("1", "2", "3", "4"), expand = c(0.01, 0.01)) +
+  scale_y_continuous(name = expression(''^153*Gd~'Content (% ID)'), limits = c(0,100), expand = c(0, 0)) +
+ # geom_errorbar(aes(ymin = Ave - Error, ymax = Ave + Error), size = 1, width = 0.05, color = "black", position = pos) +
+  theme(legend.title = element_blank()) + 
+  scale_fill_brewer(palette="Dark2") + 
+  scale_color_brewer(palette="Dark2") + 
+  theme(legend.position = "bottom") + 
+  theme(panel.spacing = unit(0.3, "lines")) + 
+  ggsave(filename = '../../../Manuscripts/2017_GdDecorporation/Overleaf/totalexcretionsbox.pdf', 
+         width = 5, height = 5, units = "in")
+
+
+ggplot(ddply(allexcreta, .(Day, Treatment, Excretion), summarize, Ave = mean(Value), 
+             Error = sd(Value)/sqrt(length(Value))), 
+       aes(x = Day, y = Ave, by = Treatment)) + 
+  geom_point(aes(fill = Treatment, color = Treatment), size = 2) + 
+  facet_grid(. ~ Excretion) + 
+  scale_x_discrete(name = "Study Day", labels = c("1", "2", "3", "4"), expand = c(0.01, 0.01)) +
+  scale_y_continuous(name = expression(''^153*Gd~'Content (% ID)'), limits = c(0,100), expand = c(0, 0)) +
+  geom_errorbar(aes(ymin = Ave - Error, ymax = Ave + Error), size = 0.5, width = 0.3, color = "black") +
+  theme(legend.title = element_blank()) + 
+  scale_fill_brewer(palette="Dark2") + 
+  scale_color_brewer(palette="Dark2") + 
+  theme(legend.position = "right") + 
+  theme(panel.spacing = unit(0.3, "lines")) + 
+  ggsave(filename = '../../../Manuscripts/2017_GdDecorporation/Overleaf/totalexcretionspoint.pdf', 
+         width = 5, height = 4, units = "in")
+
+
 
 ggplot(ddply(totcumexcreta, .(Day, Treatment), summarize, Ave=mean(Value), 
              Error = sd(Value)/sqrt(length(Value))),
@@ -290,8 +443,52 @@ ggplot(ddply(totcumexcreta, .(Day, Treatment), summarize, Ave=mean(Value),
   geom_hline(yintercept = 100, linetype = 2)
 
 
+
+
+
+
 ddply(totcumexcreta, .(Day, Treatment), summarize, Ave=mean(Value), 
       Error = sd(Value)/sqrt(length(Value)))
+
+totcumexcreta$Excretion <- as.factor(totcumexcreta$Excretion)
+str(totcumexcreta)
+
+
+allcumexcreta <- rbind(totcumexcreta, cumexcreta)
+
+with(cumexcreta, factor(Excretion, levels = rev(levels(Excretion))))
+
+     
+     
+     allcumexcreta$Excretion <- with(allcumexcreta)
+
+rmdata$variable <- with(mdata, factor(variable, levels = rev(levels(variable))))
+
+levels(allcumexcreta$Excretion)
+
+
+
+ggplot(ddply(allcumexcreta, .(Day, Treatment, Excretion), summarize, Ave=mean(Value), 
+             Error = sd(Value)/sqrt(length(Value))),
+       aes(x = Day, y = Ave, group = Treatment)) + 
+  geom_line(aes(color = Treatment), size = 0.7) +
+  scale_x_discrete(name = "Study Day", labels = c("1", "2", "3", "4"), expand = c(0.01, 0.01)) +
+  scale_y_continuous(name = expression(''^153*Gd~'Content (% ID)'), expand = c(0.05, 0.05)) +
+  #ylab("% Activity Excreted") +
+  geom_point(aes(color = Treatment), size = 1.7) + 
+  geom_errorbar(aes(ymin = Ave - Error, ymax = Ave + Error), size = .4, width = 0.1) +
+  theme(legend.title = element_blank()) + 
+  scale_color_manual(values = grouppalatte) + 
+  theme(panel.spacing = unit(0.6, "lines")) +
+  #geom_hline(yintercept = 100, linetype = 2) + 
+  facet_grid(Excretion ~ ., scales = "free") + 
+  ggsave(filename = '../../../Manuscripts/2017_GdDecorporation/Overleaf/cumulativeexcretions.pdf', 
+         width = 5.5, height = 5.5, units = "in")
+
+
+
+
+
 
 
 
@@ -337,8 +534,57 @@ summary(glht(fit, linfct=mcp(Group="Dunnett")))
 
 plot(fit)
 
+
 org.modl <- aov(value ~ variable, data = mdata)
 summary(org.modl)
 anova(org.modl)
 TukeyHSD(org.modl)
 summary(glht(org.modl, linfct=mcp(variable="Dunnett")))
+
+fit <- aov(value ~ Treatment, data = mdata[ which(mdata$variable == "Brain"), ])
+coef(fit)
+summary(fit)
+TukeyHSD(fit)
+summary(glht(fit, linfct=mcp(Treatment="Dunnett")))
+summary(glht(fit, linfct=mcp(Treatment="Tukey")))
+
+
+
+
+fit <- aov(value ~ Treatment, data = mdata[ which(mdata$variable == "Kidneys"), ])
+coef(fit)
+#plot(fit)
+summary(fit)
+#TukeyHSD(fit)
+summary(glht(fit, linfct=mcp(Treatment="Dunnett")))
+summary(glht(fit, linfct=mcp(Treatment="Tukey")))
+
+
+
+
+# ---- Print means and stds for table ----
+ddply(mdata[ which(mdata$variable != "Urine" & mdata$variable != "Feces"), ], 
+      .(Group, Treatment, variable), summarize, Ave = mean(value), 
+      Error = sd(value)/sqrt(length(value))
+)
+
+
+ddply(mdata[ which(mdata$variable == "Brain"), ], 
+      .(Group, Treatment, variable), summarize, Ave = mean(value), 
+      Error = sd(value)/sqrt(length(value))
+)
+
+ddply(reten, .(Treatment), summarize, Ave = mean(Body)*100, 
+      Error = sd(Body)/sqrt(length(Body))*100)
+ddply(reten, .(Treatment), summarize, Ave = mean(Excreta), 
+      Error = sd(Excreta)/sqrt(length(Excreta)))
+rmdata <- mdata
+rmdata$variable <- with(mdata, factor(variable, levels = rev(levels(variable))))
+
+
+ddply(rmdata[ which(rmdata$Group == "A"), ], 
+      .(Treatment, variable), summarize, Ave = mean(value), 
+      Err = sd(value)/sqrt(length(value)))
+
+
+mdata[ which(mdata$Group == "C"), sum()]
