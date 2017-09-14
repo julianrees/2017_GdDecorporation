@@ -544,7 +544,7 @@ summary(glht(org.modl, linfct=mcp(variable="Dunnett")))
 fit <- aov(value ~ Treatment, data = mdata[ which(mdata$variable == "Brain"), ])
 coef(fit)
 summary(fit)
-TukeyHSD(fit)
+#TukeyHSD(fit)
 summary(glht(fit, linfct=mcp(Treatment="Dunnett")))
 summary(glht(fit, linfct=mcp(Treatment="Tukey")))
 
@@ -569,6 +569,7 @@ ddply(mdata[ which(mdata$variable != "Urine" & mdata$variable != "Feces"), ],
 )
 
 
+Qmdata = rm.outlier(mdata$value)
 ddply(mdata[ which(mdata$variable == "Brain"), ], 
       .(Group, Treatment, variable), summarize, Ave = mean(value), 
       Error = sd(value)/sqrt(length(value))
@@ -588,3 +589,13 @@ ddply(rmdata[ which(rmdata$Group == "A"), ],
 
 
 mdata[ which(mdata$Group == "C"), sum()]
+
+library(outliers)
+
+
+Qmdata$value[ which(mdata$variable == "Brain" & mdata$Group == "A") ]
+
+dixon.test(mdata$value[ which(mdata$variable == "Brain" & mdata$Group == "A") ], type = 0)
+Qmdata = rm.outlier(mdata$value[ which(mdata$variable == "Brain" & mdata$Group == "A") ])
+mean(Qmdata)
+sd(Qmdata)/sqrt(3)
