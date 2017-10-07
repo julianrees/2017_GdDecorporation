@@ -1,0 +1,117 @@
+---
+title: "Statistical Analaysis"
+output:
+  html_document: default
+  html_notebook: default
+  pdf_document: default
+---
+
+The statistical significance of differences between groups has been evaluated using one-way ANOVA, followed by Dunnett's test to compare treatment groups to the control and Tukey's test to compare groups to each other.  The analysis has been performed using the Multcomp package for R.  
+
+### Groups
+```{r echo=FALSE, error=FALSE, message=FALSE, warning=FALSE}
+source('decorporationData.R')
+library(knitr)
+library(pander)
+groups <- dcast(mreten[which(mreten$Location == "Retained"), ], Group+Ligand+Time~Value, mean)[,1:3]
+kable(cbind(groups, Treatment = '100 umol / kg'))
+
+
+```
+
+
+
+
+### Total retained 
+```{r echo=FALSE}
+fit <- aov(Body ~ Group, data = reten)
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+summary(glht(fit, linfct=mcp(Group="Tukey")))
+
+
+#fit <- aov(value ~ Group, data = mdata[ which(mdata$variable == "ART"), ])
+#summary(fit)
+#pander(print(summary(glht(fit, linfct=mcp(Group="Dunnett")))))
+#summary(glht(fit, linfct=mcp(Group="Tukey")))
+
+
+
+
+
+#tbdata <- ddply(mdata[ which(mdata$variable != 'NA'), ], .(Group, Ligand, Time, variable), summarize, Mean = mean(value), 
+#                SD = sd(value))
+#tbdata <- dcast(mdata[ which(mdata$variable != 'NA'), ], Group+Ligand+Time ~ variable, mean)
+#kable(tbdata[,1:3])
+#kable(dcast(mdata[ which(mdata$variable != 'NA'), ], Group+Ligand+Time ~ variable, mean))
+#summary(glht(fit, linfct=mcp(Group="Dunnett")))
+```
+
+### Skeleton  
+```{r echo=FALSE, warning=FALSE}
+fit <- aov(value ~ Group, data = mdata[ which(mdata$variable == "Skeleton"), ])
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+summary(glht(fit, linfct=mcp(Group="Tukey")))
+```
+
+### Liver  
+```{r echo=FALSE, warning=FALSE}
+fit <- aov(value ~ Group, data = mdata[ which(mdata$variable == "Liver"), ])
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+summary(glht(fit, linfct=mcp(Group="Tukey")))
+```
+
+### Soft tissue  
+```{r echo=FALSE, warning=FALSE}
+fit <- aov(value ~ Group, data = mdata[ which(mdata$variable == "Soft"), ])
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+summary(glht(fit, linfct=mcp(Group="Tukey")))
+```
+
+### Abdominal tissue  
+```{r echo=FALSE, warning=FALSE}
+fit <- aov(value ~ Group, data = mdata[ which(mdata$variable == "ART"), ])
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+summary(glht(fit, linfct=mcp(Group="Tukey")))
+```
+
+### Kidney  
+```{r echo=FALSE, warning=FALSE}
+fit <- aov(value ~ Group, data = mdata[ which(mdata$variable == "Kidneys"), ])
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+summary(glht(fit, linfct=mcp(Group="Tukey")))
+```
+
+### Heart  
+```{r echo=FALSE, warning=FALSE}
+fit <- aov(value ~ Group, data = mdata[ which(mdata$variable == "Heart"), ])
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+summary(glht(fit, linfct=mcp(Group="Tukey")))
+```
+
+### Lungs
+```{r echo=FALSE, warning=FALSE}
+fit <- aov(value ~ Group, data = mdata[ which(mdata$variable == "Lungs"), ])
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+summary(glht(fit, linfct=mcp(Group="Tukey")))
+```
+
+### Spleen
+```{r echo=FALSE, warning=FALSE}
+fit <- aov(value ~ Group, data = mdata[ which(mdata$variable == "Spleen"), ])
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+summary(glht(fit, linfct=mcp(Group="Tukey")))
+```
+
+### Brain
+```{r echo=FALSE, warning=FALSE}
+fit <- aov(value ~ Group, data = mdata[ which(mdata$variable == "Brain"), ])
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+summary(glht(fit, linfct=mcp(Group="Tukey")))
+```
+
+### Thymus
+```{r echo=FALSE, warning=FALSE}
+fit <- aov(value ~ Group, data = mdata[ which(mdata$variable == "Thymus"), ])
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+summary(glht(fit, linfct=mcp(Group="Tukey")))
+```

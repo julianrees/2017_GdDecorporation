@@ -185,23 +185,24 @@ library(outliers)
 library(multcomp)
 library(xtable)
 
+reten.modl <- lm(Body ~ Group, data = reten)
+summary(reten.modl)
+anova(reten.modl)
+confint(reten.modl)
 
-# ggplot(reten, aes(x = Treatment, y = Body)) + 
-#   geom_boxplot()
 
-# reten.modl <- lm(Body ~ Group, data = reten)
-# summary(reten.modl)
-# anova(reten.modl)
-# confint(reten.modl)
-# 
-# 
-# fit <- aov(Excreta ~ Group, data = reten)
-# coef(fit)
-# summary(fit)
-# TukeyHSD(fit)
-# summary(glht(fit, linfct=mcp(Group="Dunnett")))
-# 
-# plot(fit)
+fit <- aov(Body ~ Group, data = reten)
+summary(fit)
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+summary(glht(fit, linfct=mcp(Group="Tukey")))
+
+fit <- aov(value ~ Group, data = mdata[ which(mdata$variable == "ART"), ])
+summary(fit)
+summary(glht(fit, linfct=mcp(Group="Dunnett")))
+summary(glht(fit, linfct=mcp(Group="Tukey")))
+
+
+
 # 
 # 
 # org.modl <- aov(value ~ variable, data = mdata)
@@ -318,48 +319,48 @@ library(xtable)
 # mean(Qmdata)
 # sd(Qmdata)/sqrt(3)
 
-
-means <- dcast(mdata[ which(mdata$variable != 'NA'), ], Group+Ligand+Time ~ variable, mean)
-sds <- dcast(mdata[ which(mdata$variable != 'NA'), ], Group+Ligand+Time ~ variable, sd)
-
-emeans <- dcast(cumexcreta[ which(cumexcreta$Day == "Day.4"), ], Group+Ligand+Time ~ Excretion, mean)
-
-pm <- vector(mode = 'character', length = nrow(means))
-pm[] <- "PM"
-
-
-
-round(means[4], digits = 2) 
-round(sds[4], digits = 2)
-paste0(round(means[,4], digits = 2), pm, round(sds[,4], digits = 2) )
-
-
-
-
-
-sitab <- means[1]
-for (i in c(4:ncol(means))){
-  sitab <- cbind(sitab, paste0(signif(means[,i], digits = 3), pm, signif(sds[,i], digits = 2)))
-}
-colnames(sitab) <- colnames(means)
-sitab <- cbind(sitab, Feces = signif(emeans$Feces, digits = 2), 
-               Urine = round(emeans$Urine, digits = 2))
-
-
-xtable(sitab)
-
-
-
-PlusMinus(means, sds, head = colnames(means[4]), digits = 2)
-
-
-pm <- vector(mode = 'character', length = nrow(means))
-pm[] <- "\u00B1"
-
-sds[,4]
-
-xtable(means)
-
-
+# 
+# means <- dcast(mdata[ which(mdata$variable != 'NA'), ], Group+Ligand+Time ~ variable, mean)
+# sds <- dcast(mdata[ which(mdata$variable != 'NA'), ], Group+Ligand+Time ~ variable, sd)
+# 
+# emeans <- dcast(cumexcreta[ which(cumexcreta$Day == "Day.4"), ], Group+Ligand+Time ~ Excretion, mean)
+# 
+# pm <- vector(mode = 'character', length = nrow(means))
+# pm[] <- "PM"
+# 
+# 
+# 
+# round(means[4], digits = 2) 
+# round(sds[4], digits = 2)
+# paste0(round(means[,4], digits = 2), pm, round(sds[,4], digits = 2) )
+# 
+# 
+# 
+# 
+# 
+# sitab <- means[1]
+# for (i in c(4:ncol(means))){
+#   sitab <- cbind(sitab, paste0(signif(means[,i], digits = 3), pm, signif(sds[,i], digits = 2)))
+# }
+# colnames(sitab) <- colnames(means)
+# sitab <- cbind(sitab, Feces = signif(emeans$Feces, digits = 2), 
+#                Urine = round(emeans$Urine, digits = 2))
+# 
+# 
+# xtable(sitab)
+# 
+# 
+# 
+# PlusMinus(means, sds, head = colnames(means[4]), digits = 2)
+# 
+# 
+# pm <- vector(mode = 'character', length = nrow(means))
+# pm[] <- "\u00B1"
+# 
+# sds[,4]
+# 
+# xtable(means)
+# 
+# 
 
 
