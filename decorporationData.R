@@ -2,7 +2,7 @@ library(ggplot2)
 library(reshape2)
 library(xlsx)
 library(plyr)
-library(superheat)
+# library(superheat)
 
 # get the data from excel, trim the sum column
 import_data <- read.xlsx("../FromRebecca/data/Rimport.xlsx", 
@@ -125,8 +125,8 @@ ggplot(mdata [ which(mdata$variable != "Urine" & mdata$variable != "Feces"), ],
   xlab(NULL) +
   theme(panel.spacing = unit(0.2, "lines")) +
   scale_color_manual(values = grouppalatte)# +
-  ggsave(filename = '../../../Manuscripts/2017_GdDecorporation/Overleaf/allorgansjitter_preinkscapemarks.pdf',
-         width = 6, height = 7, units = "in")
+  #ggsave(filename = '../../../Manuscripts/2017_GdDecorporation/Overleaf/allorgansjitter_preinkscapemarks.pdf',
+  #       width = 6, height = 7, units = "in")
 
 
 # Make the total excretions figure
